@@ -129,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final t = AppLocalizations.of(widget.currentLanguage);
 
     return DefaultTabController(
-      initialIndex: 1,
+      initialIndex: 0,
       length: 3,
       child: Scaffold(
         appBar: AppBar(
