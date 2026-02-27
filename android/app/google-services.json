@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "209199959695",
+    "project_id": "lingolens-app",
+    "storage_bucket": "lingolens-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209199959695:android:5f09568ff1a31981562afa",
+        "android_client_info": {
+          "package_name": "com.example.lingolens"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDq1mrKFdkBlK1HexnP3XaRpHcOVonTGNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

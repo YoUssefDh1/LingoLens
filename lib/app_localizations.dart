@@ -1,18 +1,49 @@
 class AppLocalizations {
   static const Map<String, Map<String, String>> _t = {
+    // ─────────────────────────────────────────────────────────────────
+    // ENGLISH
+    // ─────────────────────────────────────────────────────────────────
     'en': {
+      // General
       'appTitle': 'LingoLens AI',
+      'close': 'Close',
+      'cancel': 'Cancel',
+      'delete': 'Delete',
+      'save': 'Save',
+      'edit': 'Edit',
+      'copy': 'Copy',
+      'remove': 'Remove',
+      'notNow': 'Not now',
+      'confirm': 'Confirm',
+      'ok': 'OK',
+      'copiedToClipboard': 'Copied to clipboard',
+      'error': 'Error',
+
+      // Home / Scan tab
       'scanText': 'Scan Text',
       'about': 'About',
       'aboutDesc': 'LingoLens AI extracts text from images, detects language, and translates it instantly.',
       'chooseImageSource': 'Choose Image Source',
       'camera': 'Camera',
       'gallery': 'Gallery',
+      'extractText': 'Extract text from images',
+      'detectLang': 'Detect language automatically',
+      'translateInstantly': 'Translate instantly',
+      'alreadyLoggedIn': 'You are already logged into your account',
+      'errorPrefix': 'Error:',
+
+      // Settings
       'settings': 'Settings',
       'darkMode': 'Dark Mode',
       'appLanguage': 'App Language',
       'soundEffects': 'Sound Effects',
       'vibration': 'Vibration',
+      'logout': 'Log Out',
+      'logoutConfirmTitle': 'Log Out',
+      'logoutConfirmContent': 'Are you sure you want to log out?',
+      'loggedOut': 'You have been logged out',
+
+      // Scan Results
       'scanResults': 'Scan Results',
       'detectedLanguage': 'Detected Language',
       'originalText': 'Original Text',
@@ -20,47 +51,261 @@ class AppLocalizations {
       'translate': 'Translate',
       'translationFailed': 'Translation failed:',
       'noTextDetected': 'No text detected.',
+
+      // Translation detail
+      'translatedText': 'Translated Text',
+      'notes': 'Notes',
+      'saveNotes': 'Save Notes',
+      'noNotesYet': 'No notes yet. Tap Edit to add.',
+      'notAvailable': '(not available)',
+      'saved': 'Saved',
+      'deleteTranslationTitle': 'Delete translation?',
+      'deleteTranslationContent': 'This will permanently remove the translation and all its history entries.',
+      'deleted': 'Deleted',
+      'createProfile': 'Create profile',
+      'createProfileTitle': 'Create a profile',
+      'createProfileContent': 'You need an account to save translations.\n\nCreate your account to keep scans and notes synced.',
+
+      // Translations tab
+      'noTranslationsYet': 'No translations yet',
+      'noTranslationsHint': 'Use the SCAN tab to capture text with your camera.',
+
+      // History tab
+      'noHistoryYet': 'No history yet',
+      'noHistoryHint': 'Scan and translate text to build your history.',
+      'createAccountHistory': 'Create an account to save history',
+      'createAccountHint': 'Tap the profile icon on the home screen to sign up or log in.',
+      'goToProfile': 'Go to Profile',
+      'viewDetails': 'View details',
+      'removeFromHistory': 'Remove from history',
+      'removeFromHistoryTitle': 'Remove from history?',
+      'removeFromHistoryContent': 'This removes this entry from history only. The translation itself is kept in the Translations tab.',
+      'removed': 'Removed from history',
+      'cannotRerunOcr': 'Cannot re-run OCR on remote images.',
+      'imageNotFound': 'Image file not found.',
+
+      // Languages
       'lang_en': 'English',
       'lang_fr': 'French',
       'lang_ar': 'Arabic',
+
+      // Tab labels
+      'tabScan': 'SCAN',
+      'tabTranslations': 'TRANSLATIONS',
+      'tabHistory': 'HISTORY',
+
+      // Login / SignUp
+      'loginTitle': 'Sign In to Your Account',
+      'signupTitle': 'Create Your Account',
+      'email': 'Email',
+      'emailHint': 'user@example.com',
+      'emailRequired': 'Email is required',
+      'emailInvalid': 'Enter a valid email address (e.g. user@example.com)',
+      'password': 'Password',
+      'passwordHint': 'Min 8 chars, 1 uppercase, 1 number',
+      'passwordRequired': 'Password is required',
+      'passwordTooShort': 'Password must be at least 6 characters',
+      'passwordWeak': 'Password must be at least 8 characters',
+      'passwordNoUppercase': 'Must contain at least one uppercase letter',
+      'passwordNoNumber': 'Must contain at least one number',
+      'confirmPassword': 'Confirm Password',
+      'confirmPasswordHint': 'Re-enter your password',
+      'confirmPasswordRequired': 'Please confirm your password',
+      'passwordsMismatch': 'Passwords do not match',
+      'username': 'Username',
+      'usernameHint': 'e.g. john_doe',
+      'usernameRequired': 'Username is required',
+      'usernameTooShort': 'Username must be at least 3 characters',
+      'usernameTooLong': 'Username must be 20 characters or fewer',
+      'usernameInvalid': 'Only letters, numbers, and underscores allowed',
+      'forgotPassword': 'Forgot Password?',
+      'logIn': 'Log In',
+      'signUp': 'Sign Up',
+      'noAccount': 'Don\u2019t have an account? ',
+      'haveAccount': 'Already have an account? ',
+      'loginFailed': 'Login failed:',
+      'signupFailed': 'Sign up failed:',
+      'alreadyLoggedInSnack': 'You are already logged into your account',
+      'passwordStrengthWeak': 'Weak',
+      'passwordStrengthMedium': 'Medium',
+      'passwordStrengthStrong': 'Strong',
     },
+
+    // ─────────────────────────────────────────────────────────────────
+    // FRENCH
+    // ─────────────────────────────────────────────────────────────────
     'fr': {
+      // General
       'appTitle': 'LingoLens AI',
+      'close': 'Fermer',
+      'cancel': 'Annuler',
+      'delete': 'Supprimer',
+      'save': 'Enregistrer',
+      'edit': 'Modifier',
+      'copy': 'Copier',
+      'remove': 'Retirer',
+      'notNow': 'Pas maintenant',
+      'confirm': 'Confirmer',
+      'ok': 'OK',
+      'copiedToClipboard': 'Copié dans le presse-papiers',
+      'error': 'Erreur',
+
+      // Home / Scan tab
       'scanText': 'Scanner le texte',
       'about': 'À propos',
-      'aboutDesc': "LingoLens AI extrait le texte des images, détecte la langue et le traduit instantanément.",
+      'aboutDesc': 'LingoLens AI extrait le texte des images, détecte la langue et le traduit instantanément.',
       'chooseImageSource': 'Choisir la source',
       'camera': 'Caméra',
       'gallery': 'Galerie',
+      'extractText': 'Extraire le texte des images',
+      'detectLang': 'Détecter la langue automatiquement',
+      'translateInstantly': 'Traduire instantanément',
+      'alreadyLoggedIn': 'Vous êtes déjà connecté à votre compte',
+      'errorPrefix': 'Erreur :',
+
+      // Settings
       'settings': 'Paramètres',
       'darkMode': 'Mode sombre',
-      'appLanguage': "Langue de l'app", 
+      'appLanguage': "Langue de l'app",
       'soundEffects': 'Effets sonores',
       'vibration': 'Vibration',
-      'scanResults': 'Résultats de l’analyse',
+      'logout': 'Se déconnecter',
+      'logoutConfirmTitle': 'Déconnexion',
+      'logoutConfirmContent': 'Êtes-vous sûr de vouloir vous déconnecter ?',
+      'loggedOut': 'Vous avez été déconnecté',
+
+      // Scan Results
+      'scanResults': "Résultats de l'analyse",
       'detectedLanguage': 'Langue détectée',
       'originalText': 'Texte original',
       'translateTo': 'Traduire en',
       'translate': 'Traduire',
-      'translationFailed': 'Échec de la traduction:',
+      'translationFailed': 'Échec de la traduction :',
       'noTextDetected': 'Aucun texte détecté.',
+
+      // Translation detail
+      'translatedText': 'Texte traduit',
+      'notes': 'Notes',
+      'saveNotes': 'Enregistrer les notes',
+      'noNotesYet': 'Aucune note. Appuyez sur Modifier pour en ajouter.',
+      'notAvailable': '(non disponible)',
+      'saved': 'Enregistré',
+      'deleteTranslationTitle': 'Supprimer la traduction ?',
+      'deleteTranslationContent': 'Cela supprimera définitivement la traduction et toutes ses entrées d\'historique.',
+      'deleted': 'Supprimé',
+      'createProfile': 'Créer un profil',
+      'createProfileTitle': 'Créer un profil',
+      'createProfileContent': 'Vous avez besoin d\'un compte pour enregistrer des traductions.\n\nCréez votre compte pour synchroniser vos scans et vos notes.',
+
+      // Translations tab
+      'noTranslationsYet': 'Aucune traduction pour l\'instant',
+      'noTranslationsHint': 'Utilisez l\'onglet SCAN pour capturer du texte avec votre caméra.',
+
+      // History tab
+      'noHistoryYet': 'Aucun historique pour l\'instant',
+      'noHistoryHint': 'Scannez et traduisez du texte pour créer votre historique.',
+      'createAccountHistory': 'Créez un compte pour sauvegarder l\'historique',
+      'createAccountHint': 'Appuyez sur l\'icône de profil sur l\'écran d\'accueil pour vous inscrire ou vous connecter.',
+      'goToProfile': 'Aller au profil',
+      'viewDetails': 'Voir les détails',
+      'removeFromHistory': 'Retirer de l\'historique',
+      'removeFromHistoryTitle': 'Retirer de l\'historique ?',
+      'removeFromHistoryContent': 'Cela supprime uniquement cette entrée de l\'historique. La traduction reste dans l\'onglet Traductions.',
+      'removed': 'Retiré de l\'historique',
+      'cannotRerunOcr': 'Impossible de relancer l\'OCR sur des images distantes.',
+      'imageNotFound': 'Fichier image introuvable.',
+
+      // Languages
       'lang_en': 'Anglais',
       'lang_fr': 'Français',
       'lang_ar': 'Arabe',
+
+      // Tab labels
+      'tabScan': 'SCAN',
+      'tabTranslations': 'TRADUCTIONS',
+      'tabHistory': 'HISTORIQUE',
+
+      // Login / SignUp
+      'loginTitle': 'Connectez-vous à votre compte',
+      'signupTitle': 'Créer votre compte',
+      'email': 'E-mail',
+      'emailHint': 'utilisateur@exemple.com',
+      'emailRequired': 'L\'e-mail est requis',
+      'emailInvalid': 'Entrez une adresse e-mail valide (ex. : utilisateur@exemple.com)',
+      'password': 'Mot de passe',
+      'passwordHint': 'Min 8 caractères, 1 majuscule, 1 chiffre',
+      'passwordRequired': 'Le mot de passe est requis',
+      'passwordTooShort': 'Le mot de passe doit contenir au moins 6 caractères',
+      'passwordWeak': 'Le mot de passe doit contenir au moins 8 caractères',
+      'passwordNoUppercase': 'Doit contenir au moins une lettre majuscule',
+      'passwordNoNumber': 'Doit contenir au moins un chiffre',
+      'confirmPassword': 'Confirmer le mot de passe',
+      'confirmPasswordHint': 'Ressaisissez votre mot de passe',
+      'confirmPasswordRequired': 'Veuillez confirmer votre mot de passe',
+      'passwordsMismatch': 'Les mots de passe ne correspondent pas',
+      'username': 'Nom d\'utilisateur',
+      'usernameHint': 'ex. jean_dupont',
+      'usernameRequired': 'Le nom d\'utilisateur est requis',
+      'usernameTooShort': 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
+      'usernameTooLong': 'Le nom d\'utilisateur doit contenir 20 caractères ou moins',
+      'usernameInvalid': 'Seuls les lettres, chiffres et tirets bas sont autorisés',
+      'forgotPassword': 'Mot de passe oublié ?',
+      'logIn': 'Se connecter',
+      'signUp': 'S\'inscrire',
+      'noAccount': 'Pas encore de compte ? ',
+      'haveAccount': 'Vous avez déjà un compte ? ',
+      'loginFailed': 'Échec de la connexion :',
+      'signupFailed': 'Échec de l\'inscription :',
+      'alreadyLoggedInSnack': 'Vous êtes déjà connecté à votre compte',
+      'passwordStrengthWeak': 'Faible',
+      'passwordStrengthMedium': 'Moyen',
+      'passwordStrengthStrong': 'Fort',
     },
+
+    // ─────────────────────────────────────────────────────────────────
+    // ARABIC
+    // ─────────────────────────────────────────────────────────────────
     'ar': {
+      // General
       'appTitle': 'LingoLens AI',
+      'close': 'إغلاق',
+      'cancel': 'إلغاء',
+      'delete': 'حذف',
+      'save': 'حفظ',
+      'edit': 'تعديل',
+      'copy': 'نسخ',
+      'remove': 'إزالة',
+      'notNow': 'ليس الآن',
+      'confirm': 'تأكيد',
+      'ok': 'موافق',
+      'copiedToClipboard': 'تم النسخ إلى الحافظة',
+      'error': 'خطأ',
+
+      // Home / Scan tab
       'scanText': 'مسح النص',
       'about': 'حول',
       'aboutDesc': 'LingoLens AI يستخرج النص من الصور ويكشف اللغة ويترجمها فورًا.',
       'chooseImageSource': 'اختر مصدر الصورة',
       'camera': 'الكاميرا',
       'gallery': 'المعرض',
+      'extractText': 'استخراج النص من الصور',
+      'detectLang': 'اكتشاف اللغة تلقائيًا',
+      'translateInstantly': 'الترجمة الفورية',
+      'alreadyLoggedIn': 'أنت مسجّل الدخول بالفعل',
+      'errorPrefix': 'خطأ:',
+
+      // Settings
       'settings': 'الإعدادات',
       'darkMode': 'الوضع الداكن',
       'appLanguage': 'لغة التطبيق',
       'soundEffects': 'المؤثرات الصوتية',
       'vibration': 'الاهتزاز',
+      'logout': 'تسجيل الخروج',
+      'logoutConfirmTitle': 'تسجيل الخروج',
+      'logoutConfirmContent': 'هل أنت متأكد من رغبتك في تسجيل الخروج؟',
+      'loggedOut': 'تم تسجيل خروجك',
+
+      // Scan Results
       'scanResults': 'نتائج المسح',
       'detectedLanguage': 'اللغة المكتشفة',
       'originalText': 'النص الأصلي',
@@ -68,10 +313,85 @@ class AppLocalizations {
       'translate': 'ترجمة',
       'translationFailed': 'فشل الترجمة:',
       'noTextDetected': 'لم يتم اكتشاف نص.',
+
+      // Translation detail
+      'translatedText': 'النص المترجم',
+      'notes': 'ملاحظات',
+      'saveNotes': 'حفظ الملاحظات',
+      'noNotesYet': 'لا توجد ملاحظات بعد. اضغط تعديل للإضافة.',
+      'notAvailable': '(غير متاح)',
+      'saved': 'محفوظ',
+      'deleteTranslationTitle': 'حذف الترجمة؟',
+      'deleteTranslationContent': 'سيؤدي هذا إلى حذف الترجمة وجميع سجلاتها نهائيًا.',
+      'deleted': 'تم الحذف',
+      'createProfile': 'إنشاء ملف شخصي',
+      'createProfileTitle': 'إنشاء ملف شخصي',
+      'createProfileContent': 'تحتاج إلى حساب لحفظ الترجمات.\n\nأنشئ حسابك للاحتفاظ بمسحاتك وملاحظاتك.',
+
+      // Translations tab
+      'noTranslationsYet': 'لا توجد ترجمات بعد',
+      'noTranslationsHint': 'استخدم تبويب المسح لالتقاط النص بالكاميرا.',
+
+      // History tab
+      'noHistoryYet': 'لا يوجد سجل بعد',
+      'noHistoryHint': 'امسح النصوص وترجمها لبناء سجلك.',
+      'createAccountHistory': 'أنشئ حسابًا لحفظ السجل',
+      'createAccountHint': 'اضغط على أيقونة الملف الشخصي في الشاشة الرئيسية للتسجيل أو تسجيل الدخول.',
+      'goToProfile': 'الذهاب إلى الملف الشخصي',
+      'viewDetails': 'عرض التفاصيل',
+      'removeFromHistory': 'إزالة من السجل',
+      'removeFromHistoryTitle': 'إزالة من السجل؟',
+      'removeFromHistoryContent': 'هذا يزيل هذا الإدخال من السجل فقط. تبقى الترجمة في تبويب الترجمات.',
+      'removed': 'تمت الإزالة من السجل',
+      'cannotRerunOcr': 'لا يمكن إعادة تشغيل OCR على الصور البعيدة.',
+      'imageNotFound': 'ملف الصورة غير موجود.',
+
+      // Languages
       'lang_en': 'الإنجليزية',
       'lang_fr': 'الفرنسية',
       'lang_ar': 'العربية',
-    }
+
+      // Tab labels
+      'tabScan': 'مسح',
+      'tabTranslations': 'الترجمات',
+      'tabHistory': 'السجل',
+
+      // Login / SignUp
+      'loginTitle': 'تسجيل الدخول إلى حسابك',
+      'signupTitle': 'إنشاء حسابك',
+      'email': 'البريد الإلكتروني',
+      'emailHint': 'مستخدم@مثال.com',
+      'emailRequired': 'البريد الإلكتروني مطلوب',
+      'emailInvalid': 'أدخل عنوان بريد إلكتروني صالحًا',
+      'password': 'كلمة المرور',
+      'passwordHint': 'الحد الأدنى 8 أحرف، حرف كبير، رقم',
+      'passwordRequired': 'كلمة المرور مطلوبة',
+      'passwordTooShort': 'يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل',
+      'passwordWeak': 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل',
+      'passwordNoUppercase': 'يجب أن تحتوي على حرف كبير واحد على الأقل',
+      'passwordNoNumber': 'يجب أن تحتوي على رقم واحد على الأقل',
+      'confirmPassword': 'تأكيد كلمة المرور',
+      'confirmPasswordHint': 'أعد إدخال كلمة المرور',
+      'confirmPasswordRequired': 'يرجى تأكيد كلمة المرور',
+      'passwordsMismatch': 'كلمات المرور غير متطابقة',
+      'username': 'اسم المستخدم',
+      'usernameHint': 'مثال: ahmed_99',
+      'usernameRequired': 'اسم المستخدم مطلوب',
+      'usernameTooShort': 'يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل',
+      'usernameTooLong': 'يجب ألا يتجاوز اسم المستخدم 20 حرفًا',
+      'usernameInvalid': 'يُسمح فقط بالأحرف والأرقام والشرطة السفلية',
+      'forgotPassword': 'نسيت كلمة المرور؟',
+      'logIn': 'تسجيل الدخول',
+      'signUp': 'إنشاء حساب',
+      'noAccount': 'ليس لديك حساب؟ ',
+      'haveAccount': 'لديك حساب بالفعل؟ ',
+      'loginFailed': 'فشل تسجيل الدخول:',
+      'signupFailed': 'فشل إنشاء الحساب:',
+      'alreadyLoggedInSnack': 'أنت مسجّل الدخول بالفعل',
+      'passwordStrengthWeak': 'ضعيف',
+      'passwordStrengthMedium': 'متوسط',
+      'passwordStrengthStrong': 'قوي',
+    },
   };
 
   static Map<String, String> of(String langCode) {

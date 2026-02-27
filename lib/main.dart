@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'profile/login.dart';
+import 'profile/sign_up.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -130,6 +132,20 @@ class _LingoLensAppState extends State<LingoLensApp> {
         isDarkMode: _themeMode == ThemeMode.dark,
         currentLanguage: _locale.languageCode,
       ),
+      routes: {
+        '/login': (_) => const LoginScreen(),
+        '/signup': (_) => const SignUpScreen(),
+        '/home': (_) => HomeScreen(
+              toggleTheme: toggleTheme,
+              changeLanguage: changeLanguage,
+              soundOn: _soundOn,
+              vibrationOn: _vibrationOn,
+              toggleSound: toggleSound,
+              toggleVibration: toggleVibration,
+              isDarkMode: _themeMode == ThemeMode.dark,
+              currentLanguage: _locale.languageCode,
+            ),
+      },
     );
   }
 }
