@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -62,11 +63,52 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin(Map<String, String> loc) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
+    
     try {
+      // Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      // Save login state locally
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('loggedIn', true);
+
       if (!mounted) return;
+      
+      // Navigate to home
       Navigator.pushReplacementNamed(context, '/home');
+      
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = loc['userNotFound'] ?? 'No user found with this email.';
+          break;
+        case 'wrong-password':
+          errorMessage = loc['wrongPassword'] ?? 'Wrong password.';
+          break;
+        case 'invalid-email':
+          errorMessage = loc['invalidEmail'] ?? 'Invalid email format.';
+          break;
+        case 'user-disabled':
+          errorMessage = loc['userDisabled'] ?? 'This account has been disabled.';
+          break;
+        case 'too-many-requests':
+          errorMessage = loc['tooManyRequests'] ?? 'Too many attempts. Please try again later.';
+          break;
+        default:
+          errorMessage = e.message ?? (loc['loginFailed'] ?? 'Login failed');
+      }
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(errorMessage),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red.shade600,
+      ));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -192,7 +234,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            // TODO: Implement password reset
+                          },
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero, minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'app_localizations.dart';
 import 'services/feedback_service.dart';
 
@@ -47,9 +48,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadLoginState() async {
+    // Check BOTH Firebase Auth AND SharedPreferences
+    final firebaseUser = FirebaseAuth.instance.currentUser;
     final prefs = await SharedPreferences.getInstance();
+    final localLoggedIn = prefs.getBool('loggedIn') ?? false;
+    
     if (!mounted) return;
-    setState(() => _isLoggedIn = prefs.getBool('loggedIn') ?? false);
+    setState(() {
+      _isLoggedIn = firebaseUser != null || localLoggedIn;
+    });
   }
 
   Future<void> _handleLogout(Map<String, String> loc) async {
@@ -72,8 +79,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (confirmed != true || !mounted) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('loggedIn', false);
+    // Use FeedbackService.signOut() to clear both Firebase and local prefs
+    await FeedbackService.signOut();
+    
     if (!mounted) return;
 
     setState(() => _isLoggedIn = false);
@@ -97,7 +105,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        // Keep the back arrow in Settings — it's a push page from Home
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(loc['settings'] ?? 'Settings',
             style: const TextStyle(color: Colors.white)),

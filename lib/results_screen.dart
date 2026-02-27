@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/ml_service.dart';
 import 'services/feedback_service.dart';
 import 'app_localizations.dart';
@@ -33,10 +35,45 @@ class _ResultsScreenState extends State<ResultsScreen> {
   bool _isTranslating = false;
   String _targetLanguage = 'en';
 
+  // Firebase instances
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   void dispose() {
     _mlService.dispose();
     super.dispose();
+  }
+
+  /// Get current Firebase user ID
+  String? get _userId => FirebaseAuth.instance.currentUser?.uid;
+
+  /// Save translation to Firestore
+  Future<void> _saveToFirestore({
+    required String originalText,
+    required String translatedText,
+    required String sourceLanguage,
+    required String targetLanguage,
+  }) async {
+    final userId = _userId;
+    if (userId == null) return; // Not logged in, skip Firestore save
+
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('history')
+          .add({
+        'originalText': originalText,
+        'translatedText': translatedText,
+        'sourceLanguage': sourceLanguage,
+        'targetLanguage': targetLanguage,
+        'imageUrl': null, // Image already processed, we could upload if needed
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error saving to Firestore: $e');
+      // Don't show error to user, just log it
+    }
   }
 
   Future<void> _handleTranslation(Map<String, String> loc) async {
@@ -46,6 +83,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           widget.recognizedText, widget.languageCode, _targetLanguage);
       setState(() => _translatedText = result);
 
+      // Save to local repository (existing behavior)
       final now = DateTime.now();
       final id = now.microsecondsSinceEpoch.toString();
       final sourceLang = _languageName(widget.languageCode);
@@ -62,6 +100,26 @@ class _ResultsScreenState extends State<ResultsScreen> {
         originalText: widget.recognizedText,
         languageCode: widget.languageCode,
       ));
+
+      // Save to Firestore (new Firebase integration)
+      await _saveToFirestore(
+        originalText: widget.recognizedText,
+        translatedText: result,
+        sourceLanguage: widget.languageCode,
+        targetLanguage: _targetLanguage,
+      );
+
+      if (!mounted) return;
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc['translationSaved'] ?? 'Translation saved to history'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.green.shade600,
+        ),
+      );
+
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

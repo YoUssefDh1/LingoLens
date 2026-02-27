@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../app_localizations.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _isLoading = false;
@@ -39,29 +42,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final prefs = await SharedPreferences.getInstance();
     final lang = prefs.getString('language') ?? 'en';
     final loggedIn = prefs.getBool('loggedIn') ?? false;
+
     if (!mounted) return;
     setState(() => _lang = lang);
+
     if (loggedIn) {
       final loc = AppLocalizations.of(_lang);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(loc['alreadyLoggedInSnack'] ?? 'You are already logged in'),
-        behavior: SnackBarBehavior.floating,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc['alreadyLoggedInSnack'] ?? 'You are already logged in'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       Navigator.pop(context);
     }
   }
+
+  // ---------------- VALIDATORS ----------------
 
   String? _validateUsername(String? value, Map<String, String> loc) {
     if (value == null || value.trim().isEmpty) return loc['usernameRequired'];
     if (value.trim().length < 3) return loc['usernameTooShort'];
     if (value.trim().length > 20) return loc['usernameTooLong'];
-    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) return loc['usernameInvalid'];
+    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
+      return loc['usernameInvalid'];
+    }
     return null;
   }
 
   String? _validateEmail(String? value, Map<String, String> loc) {
     if (value == null || value.trim().isEmpty) return loc['emailRequired'];
-    if (!RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$').hasMatch(value.trim())) {
+    if (!RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(value.trim())) {
       return loc['emailInvalid'];
     }
     return null;
@@ -81,6 +93,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return null;
   }
 
+  // ---------------- PASSWORD STRENGTH ----------------
+
   _PasswordStrength _getStrength(String password) {
     if (password.isEmpty) return _PasswordStrength.none;
     int score = 0;
@@ -89,33 +103,110 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (RegExp(r'[A-Z]').hasMatch(password)) score++;
     if (RegExp(r'[0-9]').hasMatch(password)) score++;
     if (RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password)) score++;
+
     if (score <= 1) return _PasswordStrength.weak;
     if (score <= 3) return _PasswordStrength.medium;
     return _PasswordStrength.strong;
   }
 
+  // ---------------- FIREBASE SIGN UP ----------------
+
   Future<void> _handleSignUp(Map<String, String> loc) async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('loggedIn', true);
-      await prefs.setString('username', _usernameController.text.trim());
-      await prefs.setString('email', _emailController.text.trim());
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+      final username = _usernameController.text.trim();
+
+      // 🔥 Firebase Auth
+      UserCredential credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = credential.user;
+
+      if (user != null) {
+        // 🗂 Firestore user document
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set({
+          'uid': user.uid,
+          'username': username,
+          'email': email,
+          'createdAt': Timestamp.now(),
+        });
+
+        // 💾 Local session
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('loggedIn', true);
+        await prefs.setString('username', username);
+        await prefs.setString('email', email);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc['signupSuccess'] ?? 'Account created successfully'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    }
+
+    // Firebase errors
+    on FirebaseAuthException catch (e) {
+      String message;
+
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = loc['emailAlreadyInUse'] ?? 'Email already in use.';
+          break;
+        case 'weak-password':
+          message = loc['passwordWeak'] ?? 'Password is too weak.';
+          break;
+        case 'invalid-email':
+          message = loc['emailInvalid'] ?? 'Invalid email address.';
+          break;
+        case 'network-request-failed':
+          message = loc['networkError'] ?? 'Network error.';
+          break;
+        default:
+          message = loc['signupFailed'] ?? 'Registration failed.';
+      }
+
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('${loc['signupFailed'] ?? 'Sign up failed:'} ${e.toString()}'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.red.shade600,
-      ));
-    } finally {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc['signupFailed'] ?? 'Something went wrong'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+    }
+
+    finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

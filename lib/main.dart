@@ -5,8 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'profile/login.dart';
 import 'profile/sign_up.dart';
 
+// Firebase Imports
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('darkMode') ?? false;

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'services/ml_service.dart';
 import 'services/feedback_service.dart';
 import 'app_localizations.dart';
@@ -62,9 +63,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _refreshLoginState() async {
+    // Check Firebase Auth state
+    final user = FirebaseAuth.instance.currentUser;
     final prefs = await SharedPreferences.getInstance();
+    final localLoggedIn = prefs.getBool('loggedIn') ?? false;
+    
     if (!mounted) return;
-    setState(() => _isLoggedIn = prefs.getBool('loggedIn') ?? false);
+    setState(() {
+      // Prefer Firebase auth state, fallback to local state
+      _isLoggedIn = user != null || localLoggedIn;
+    });
   }
 
   Future<void> _processImage(ImageSource source) async {
@@ -151,7 +159,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Future<void> _handleProfileTap() async {
     final loc = AppLocalizations.of(widget.currentLanguage);
-    if (_isLoggedIn) {
+    // Check Firebase auth state
+    final user = FirebaseAuth.instance.currentUser;
+    
+    if (user != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(loc['alreadyLoggedIn'] ?? 'You are already logged in'),
         behavior: SnackBarBehavior.floating,
@@ -227,7 +238,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             indicatorWeight: 3,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
-            // Tab labels localized
             tabs: [
               Tab(text: loc['tabScan'] ?? loc['scanText'] ?? 'SCAN'),
               Tab(text: loc['tabTranslations'] ?? loc['translate'] ?? 'TRANSLATIONS'),
