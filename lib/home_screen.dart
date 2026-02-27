@@ -6,6 +6,8 @@ import 'services/feedback_service.dart';
 import 'app_localizations.dart';
 import 'results_screen.dart';
 import 'settings_screen.dart';
+import 'translation.dart';
+import 'history.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(bool)? toggleTheme;
@@ -126,149 +128,188 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final t = AppLocalizations.of(widget.currentLanguage);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                shape: BoxShape.circle,
+    return DefaultTabController(
+      initialIndex: 1,
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(6),
+                child: ClipOval(child: Image.asset('assets/images/logo.png', fit: BoxFit.contain)),
               ),
-              padding: const EdgeInsets.all(6),
-              child: ClipOval(child: Image.asset('assets/images/logo.png', fit: BoxFit.contain)),
-            ),
-            const SizedBox(width: 12),
-            Text(t['appTitle'] ?? 'LingoLens AI'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SettingsScreen(
-                  toggleTheme: widget.toggleTheme,
-                  changeLanguage: widget.changeLanguage,
-                  toggleSound: widget.toggleSound,
-                  toggleVibration: widget.toggleVibration,
-                  initialDarkMode: widget.isDarkMode,
-                  initialLanguage: widget.currentLanguage,
-                  initialSound: widget.soundOn,
-                  initialVibration: widget.vibrationOn,
+              const SizedBox(width: 12),
+              Text(t['appTitle'] ?? 'LingoLens AI'),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SettingsScreen(
+                    toggleTheme: widget.toggleTheme,
+                    changeLanguage: widget.changeLanguage,
+                    toggleSound: widget.toggleSound,
+                    toggleVibration: widget.toggleVibration,
+                    initialDarkMode: widget.isDarkMode,
+                    initialLanguage: widget.currentLanguage,
+                    initialSound: widget.soundOn,
+                    initialVibration: widget.vibrationOn,
+                  ),
                 ),
               ),
             ),
+          ],
+          bottom: TabBar(
+            indicatorColor: const Color(0xFF004E4E),
+            indicatorWeight: 3,
+            labelColor: theme.colorScheme.onSurface,
+            unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
+            tabs: const [
+              Tab(text: 'SCAN'),
+              Tab(text: 'TRANSLATIONS'),
+              Tab(text: 'HISTORY'),
+            ],
           ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Card(
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [theme.colorScheme.surface, theme.colorScheme.surface.withOpacity(0.02)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SafeArea(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Card(
+                        elevation: 0,
+                        color: theme.colorScheme.background,
+                        child: TabBarView(
                           children: [
-                            const SizedBox(height: 8),
-                            Container(
-                              width: 160,
-                              height: 160,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.surface,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colorScheme.primary.withOpacity(0.06),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 6),
+                            // SCAN tab — keep the original scan card UI
+                            SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Card(
+                                  elevation: 6,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [theme.colorScheme.surface, theme.colorScheme.surface.withOpacity(0.02)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Container(
+                                          width: 140,
+                                          height: 140,
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.surface,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: theme.colorScheme.primary.withOpacity(0.06),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          padding: const EdgeInsets.all(12),
+                                          child: ClipOval(
+                                            child: Image.asset(
+                                              'assets/images/logo.png',
+                                              width: 140,
+                                              height: 140,
+                                              fit: BoxFit.contain,
+                                              semanticLabel: 'LingoLens logo',
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 18),
+                                        Text(
+                                          t['appTitle'] ?? 'LingoLens AI',
+                                          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          t['aboutDesc'] ?? '',
+                                          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.85)),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 22),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: 56,
+                                          child: FilledButton.icon(
+                                            onPressed: () {
+                                              FeedbackService.click(sound: widget.soundOn, vibration: widget.vibrationOn);
+                                              _showImageSourceDialog();
+                                            },
+                                            icon: const Icon(Icons.document_scanner_outlined),
+                                            label: Text(t['scanText'] ?? 'Scan Text', style: const TextStyle(fontSize: 16)),
+                                            style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ExpansionTile(
+                                          leading: Icon(Icons.info_outline, color: theme.colorScheme.primary),
+                                          title: Text(t['about'] ?? 'About', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                                              child: Column(
+                                                children: [
+                                                  ListTile(
+                                                    leading: Icon(Icons.document_scanner_outlined, color: theme.colorScheme.primary),
+                                                    title: Text('Extract text from images', style: theme.textTheme.bodyMedium),
+                                                  ),
+                                                  ListTile(
+                                                    leading: Icon(Icons.language, color: theme.colorScheme.primary),
+                                                    title: Text('Detect language automatically', style: theme.textTheme.bodyMedium),
+                                                  ),
+                                                  ListTile(
+                                                    leading: Icon(Icons.translate, color: theme.colorScheme.primary),
+                                                    title: Text('Translate instantly', style: theme.textTheme.bodyMedium),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              child: ClipOval(
-                                child: Image.asset(
-                                  'assets/images/logo.png',
-                                  width: 140,
-                                  height: 140,
-                                  fit: BoxFit.contain,
-                                  semanticLabel: 'LingoLens logo',
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 18),
-                            Text(
-                              t['appTitle'] ?? 'LingoLens AI',
-                              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: theme.colorScheme.onSurface),
-                              textAlign: TextAlign.center,
+                            // TRANSLATIONS tab — learning feed
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                              child: LearningFeed(),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              t['aboutDesc'] ?? '',
-                              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.85)),
-                              textAlign: TextAlign.center,
+                            // HISTORY tab
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                              child: HistoryScreen(),
                             ),
-                            const SizedBox(height: 22),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 56,
-                              child: FilledButton.icon(
-                                onPressed: () {
-                                  FeedbackService.click(sound: widget.soundOn, vibration: widget.vibrationOn);
-                                  _showImageSourceDialog();
-                                },
-                                icon: const Icon(Icons.document_scanner_outlined),
-                                label: Text(t['scanText'] ?? 'Scan Text', style: const TextStyle(fontSize: 16)),
-                                style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ExpansionTile(
-                              leading: Icon(Icons.info_outline, color: theme.colorScheme.primary),
-                              title: Text(t['about'] ?? 'About', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        leading: Icon(Icons.document_scanner_outlined, color: theme.colorScheme.primary),
-                                        title: Text('Extract text from images', style: theme.textTheme.bodyMedium),
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.language, color: theme.colorScheme.primary),
-                                        title: Text('Detect language automatically', style: theme.textTheme.bodyMedium),
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.translate, color: theme.colorScheme.primary),
-                                        title: Text('Translate instantly', style: theme.textTheme.bodyMedium),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
                           ],
                         ),
                       ),
@@ -276,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-            ),
+      ),
     );
   }
 }
