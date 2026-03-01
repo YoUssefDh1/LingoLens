@@ -83,7 +83,6 @@ class TranslationRepository extends ChangeNotifier {
 
   void deleteTranslation(String id) {
     _items.removeWhere((e) => e.id == id);
-    _history.removeWhere((h) => h.translation.id == id);
     notifyListeners();
   }
 
@@ -127,11 +126,15 @@ final TranslationRepository translationRepo = TranslationRepository();
 class TranslationDetailPage extends StatefulWidget {
   final Translation translation;
   final String appLanguage;
+  final bool isFromHistory;
+  final Future<void> Function()? onDeleteFromHistory;
 
   const TranslationDetailPage({
     super.key,
     required this.translation,
     this.appLanguage = 'en',
+    this.isFromHistory = false,
+    this.onDeleteFromHistory,
   });
 
   @override
@@ -306,6 +309,7 @@ class _TranslationDetailPageState extends State<TranslationDetailPage> {
 
                   // Buttons
                   Row(children: [
+                    if (!widget.isFromHistory) ...[
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
@@ -318,10 +322,13 @@ class _TranslationDetailPageState extends State<TranslationDetailPage> {
                       ),
                     ),
                     const SizedBox(width: 10),
+                    ],
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          await translationRepo.shareTranslation(_t.id);
+                          await Clipboard.setData(ClipboardData(
+                            text: '${_t.sourceLang} → ${_t.targetLang}\n${_t.originalText}\n${_t.snippet}',
+                          ));
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(loc['copiedToClipboard'] ?? 'Copied to clipboard'),
@@ -357,8 +364,13 @@ class _TranslationDetailPageState extends State<TranslationDetailPage> {
                           ),
                         );
                         if (ok == true && context.mounted) {
-                          translationRepo.deleteTranslation(_t.id);
-                          Navigator.pop(context);
+                          if (widget.isFromHistory && widget.onDeleteFromHistory != null) {
+                            await widget.onDeleteFromHistory!();
+                              } 
+                              else {
+                            translationRepo.deleteTranslation(_t.id);
+                            }
+                            if (context.mounted) Navigator.pop(context);
                         }
                       },
                       icon: const Icon(Icons.delete_outline),
@@ -572,25 +584,6 @@ class _TranslationCard extends StatelessWidget {
                     onPressed: () async {
                       if (!await _ensureLoggedIn(context, loc)) return;
                       translationRepo.toggleSave(translation.id);
-                    },
-                  ),
-                  IconButton(
-                    tooltip: loc['notes'],
-                    icon: const Icon(Icons.sticky_note_2_outlined),
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => TranslationDetailPage(translation: translation, appLanguage: appLanguage),
-                    )),
-                  ),
-                  IconButton(
-                    tooltip: loc['copy'],
-                    icon: const Icon(Icons.share_outlined),
-                    onPressed: () async {
-                      await translationRepo.shareTranslation(translation.id);
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(loc['copiedToClipboard'] ?? 'Copied to clipboard'),
-                        behavior: SnackBarBehavior.floating,
-                      ));
                     },
                   ),
                   IconButton(

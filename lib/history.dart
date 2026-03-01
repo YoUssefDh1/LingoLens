@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'app_localizations.dart';
@@ -17,210 +16,173 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  bool _isLoggedIn = false;
-  bool _loginStateLoaded = false;
   final MLService _mlService = MLService();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLoginState();
-  }
-
-  Future<void> _loadLoginState() async {
-    // Check Firebase auth state
-    final user = FirebaseAuth.instance.currentUser;
-    final prefs = await SharedPreferences.getInstance();
-    final localLoggedIn = prefs.getBool('loggedIn') ?? false;
-    
-    if (!mounted) return;
-    setState(() {
-      // Prefer Firebase auth state, fallback to local state
-      _isLoggedIn = user != null || localLoggedIn;
-      _loginStateLoaded = true;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(widget.appLanguage);
 
-    if (!_loginStateLoaded) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (!_isLoggedIn) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.person_outline,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.9)),
-              const SizedBox(height: 12),
-              Text(
-                loc['createAccountHistory'] ?? 'Create an account to save history',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                loc['createAccountHint'] ?? '',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => Navigator.pushNamed(context, '/login'),
-                child: Text(loc['goToProfile'] ?? 'Go to Profile'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Use Firestore stream for real-time updates
-    return StreamBuilder<QuerySnapshot>(
-      stream: _mlService.getHistoryStream(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, authSnapshot) {
+        if (authSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (snapshot.hasError) {
+        if (authSnapshot.data == null) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
-                const SizedBox(height: 12),
-                Text(loc['errorLoadingHistory'] ?? 'Error loading history'),
-                const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: () => setState(() {}),
-                  child: Text(loc['retry'] ?? 'Retry'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        final docs = snapshot.data?.docs ?? [];
-        
-        if (docs.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.history,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.9)),
-                const SizedBox(height: 12),
-                Text(loc['noHistoryYet'] ?? 'No history yet',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                Text(loc['noHistoryHint'] ?? 'Scan and translate text to build your history.'),
-              ],
-            ),
-          );
-        }
-
-        return ListView.separated(
-          padding: const EdgeInsets.all(8),
-          itemCount: docs.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final doc = docs[index];
-            final data = doc.data() as Map<String, dynamic>;
-            final createdAt = data['createdAt'] != null 
-                ? (data['createdAt'] as Timestamp).toDate()
-                : DateTime.now();
-            final when = DateFormat.yMMMd().add_jm().format(createdAt);
-
-            // Create Translation object from Firestore data
-            final translation = Translation(
-              id: doc.id,
-              sourceLang: data['sourceLanguage'] ?? 'en',
-              targetLang: data['targetLanguage'] ?? 'en',
-              title: '${(data['sourceLanguage'] ?? 'en').toString().toUpperCase()} → ${(data['targetLanguage'] ?? 'en').toString().toUpperCase()}',
-              snippet: data['translatedText'] ?? '',
-              imageUrl: data['imageUrl'] ?? '',
-              originalText: data['originalText'] ?? '',
-            );
-
-            return Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TranslationDetailPage(
-                      translation: translation,
-                      appLanguage: widget.appLanguage,
-                    ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.person_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.9)),
+                  const SizedBox(height: 12),
+                  Text(
+                    loc['createAccountHistory'] ?? 'Create an account to save history',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
                   ),
+                  const SizedBox(height: 6),
+                  Text(
+                    loc['createAccountHint'] ?? '',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => Navigator.pushNamed(context, '/login'),
+                    child: Text(loc['goToProfile'] ?? 'Go to Profile'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // User is logged in — show Firestore stream
+        return StreamBuilder<QuerySnapshot>(
+          stream: _mlService.getHistoryStream(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
+                    const SizedBox(height: 12),
+                    Text(loc['errorLoadingHistory'] ?? 'Error loading history'),
+                    const SizedBox(height: 8),
+                    FilledButton(
+                      onPressed: () => setState(() {}),
+                      child: Text(loc['retry'] ?? 'Retry'),
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Thumbnail
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: SizedBox(
-                          width: 72, 
-                          height: 72, 
-                          child: _buildImage(data['imageUrl']),
+              );
+            }
+
+            final docs = snapshot.data?.docs ?? [];
+
+            if (docs.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.history,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.9)),
+                    const SizedBox(height: 12),
+                    Text(loc['noHistoryYet'] ?? 'No history yet',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    Text(loc['noHistoryHint'] ?? 'Scan and translate text to build your history.'),
+                  ],
+                ),
+              );
+            }
+
+            return ListView.separated(
+              padding: const EdgeInsets.all(8),
+              itemCount: docs.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final doc = docs[index];
+                final data = doc.data() as Map<String, dynamic>;
+                final createdAt = data['createdAt'] != null
+                    ? (data['createdAt'] as Timestamp).toDate()
+                    : DateTime.now();
+                final when = DateFormat.yMMMd().add_jm().format(createdAt);
+
+                final translation = Translation(
+                  id: doc.id,
+                  sourceLang: data['sourceLanguage'] ?? 'en',
+                  targetLang: data['targetLanguage'] ?? 'en',
+                  title:
+                      '${(data['sourceLanguage'] ?? 'en').toString().toUpperCase()} → ${(data['targetLanguage'] ?? 'en').toString().toUpperCase()}',
+                  snippet: data['translatedText'] ?? '',
+                  imageUrl: data['imageUrl'] ?? '',
+                  originalText: data['originalText'] ?? '',
+                );
+
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TranslationDetailPage(
+                          translation: translation,
+                          appLanguage: widget.appLanguage,
+                          isFromHistory: true,
+                          onDeleteFromHistory: () => _mlService.deleteHistoryItem(doc.id),
                         ),
                       ),
-                      const SizedBox(width: 12),
-
-                      // Text content
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data['sourceLanguage']?.toString().toUpperCase() ?? 'EN',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${data['sourceLanguage'] ?? 'en'} → ${data['targetLanguage'] ?? 'en'} • $when',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              data['translatedText'] ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Action column
-                      Column(
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.open_in_new, size: 20),
-                            tooltip: loc['viewDetails'] ?? 'View details',
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => TranslationDetailPage(
-                                  translation: translation,
-                                  appLanguage: widget.appLanguage,
-                                ),
-                              ),
+                          // Thumbnail
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: SizedBox(
+                              width: 72,
+                              height: 72,
+                              child: _buildImage(data['imageUrl']),
                             ),
                           ),
+                          const SizedBox(width: 12),
+
+                          // Text content
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${data['sourceLanguage'] ?? 'en'} → ${data['targetLanguage'] ?? 'en'} • $when',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  data['translatedText'] ?? '',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Action column — delete only, card tap handles navigation
                           IconButton(
                             icon: const Icon(Icons.delete_outline,
                                 color: Colors.redAccent, size: 20),
@@ -231,15 +193,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 builder: (ctx) => AlertDialog(
                                   title: Text(
                                       loc['removeFromHistoryTitle'] ?? 'Remove from history?'),
-                                  content:
-                                      Text(loc['removeFromHistoryContent'] ?? ''),
+                                  content: Text(loc['removeFromHistoryContent'] ?? ''),
                                   actions: [
                                     TextButton(
                                         onPressed: () => Navigator.pop(ctx, false),
                                         child: Text(loc['cancel'] ?? 'Cancel')),
                                     FilledButton(
-                                      style: FilledButton.styleFrom(
-                                          backgroundColor: Colors.red),
+                                      style: FilledButton.styleFrom(backgroundColor: Colors.red),
                                       onPressed: () => Navigator.pop(ctx, true),
                                       child: Text(loc['remove'] ?? 'Remove'),
                                     ),
@@ -259,10 +219,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             );
           },
         );
@@ -273,24 +233,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildImage(dynamic imageUrl) {
     if (imageUrl == null || imageUrl.toString().isEmpty) {
       return Container(
-        color: Colors.grey.shade200, 
+        color: Colors.grey.shade200,
         child: const Icon(Icons.image, size: 32),
       );
     }
-    
+
     final url = imageUrl.toString();
     if (url.startsWith('http')) {
       return Image.network(url, fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.broken_image, size: 32),
-          ));
+                color: Colors.grey.shade200,
+                child: const Icon(Icons.broken_image, size: 32),
+              ));
     }
     try {
       final file = File(url);
       if (file.existsSync()) return Image.file(file, fit: BoxFit.cover);
     } catch (_) {}
-    return Container(
-        color: Colors.grey.shade200, child: const Icon(Icons.image, size: 32));
+    return Container(color: Colors.grey.shade200, child: const Icon(Icons.image, size: 32));
   }
 }

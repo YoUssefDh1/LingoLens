@@ -51,6 +51,7 @@ class AppLocalizations {
       'translate': 'Translate',
       'translationFailed': 'Translation failed:',
       'noTextDetected': 'No text detected.',
+      'done': 'Done ',
 
       // Translation detail
       'translatedText': 'Translated Text',
@@ -182,6 +183,7 @@ class AppLocalizations {
       'translate': 'Traduire',
       'translationFailed': 'Échec de la traduction :',
       'noTextDetected': 'Aucun texte détecté.',
+      'done' : 'Fermer',
 
       // Translation detail
       'translatedText': 'Texte traduit',
@@ -313,6 +315,7 @@ class AppLocalizations {
       'translate': 'ترجمة',
       'translationFailed': 'فشل الترجمة:',
       'noTextDetected': 'لم يتم اكتشاف نص.',
+      'done':'أغلق',
 
       // Translation detail
       'translatedText': 'النص المترجم',

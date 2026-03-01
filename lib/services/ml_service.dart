@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class MLService {
   final TextRecognizer _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
   final LanguageIdentifier _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
+  final Map<String, OnDeviceTranslator> _translatorCache = {};
 
   // Firebase instances
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -37,6 +38,7 @@ class MLService {
         translatedText: translatedText,
         sourceLanguage: sourceLanguage,
         targetLanguage: targetLanguage,
+        imagePath: imageFile.path,
       );
 
       return {
@@ -45,6 +47,7 @@ class MLService {
         'translatedText': translatedText,
         'sourceLanguage': sourceLanguage,
         'targetLanguage': targetLanguage,
+        'imagePath': imageFile.path,
       };
     } catch (e) {
       return {'success': false, 'error': e.toString()};
@@ -57,6 +60,7 @@ class MLService {
     required String translatedText,
     required String sourceLanguage,
     required String targetLanguage,
+    String? imagePath,
   }) async {
     if (_userId == null) return;
 
@@ -70,7 +74,7 @@ class MLService {
         'translatedText': translatedText,
         'sourceLanguage': sourceLanguage,
         'targetLanguage': targetLanguage,
-        'imageUrl': null, // No image saved
+        'imageUrl': imagePath,
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -114,37 +118,34 @@ class MLService {
     return await _languageIdentifier.identifyLanguage(text);
   }
 
-  Future<String> translateText(String text, String sourceLanguage, String targetLanguage) async {
-    TranslateLanguage map(String code) {
-      switch (code.toLowerCase()) {
-        case 'fr':
-          return TranslateLanguage.french;
-        case 'ar':
-          return TranslateLanguage.arabic;
-        case 'en':
-        default:
-          return TranslateLanguage.english;
-      }
-    }
-
-    final sourceModel = map(sourceLanguage);
-    final targetModel = map(targetLanguage);
-
-    final onDeviceTranslator = OnDeviceTranslator(
-      sourceLanguage: sourceModel,
-      targetLanguage: targetModel,
-    );
-
-    try {
-      final String response = await onDeviceTranslator.translateText(text);
-      return response;
-    } finally {
-      onDeviceTranslator.close();
+Future<String> translateText(String text, String sourceLanguage, String targetLanguage) async {
+  TranslateLanguage map(String code) {
+    switch (code.toLowerCase()) {
+      case 'fr':
+        return TranslateLanguage.french;
+      case 'ar':
+        return TranslateLanguage.arabic;
+      case 'en':
+      default:
+        return TranslateLanguage.english;
     }
   }
 
-  void dispose() {
-    _textRecognizer.close();
-    _languageIdentifier.close();
+  final key = '${sourceLanguage}_$targetLanguage';
+  _translatorCache[key] ??= OnDeviceTranslator(
+    sourceLanguage: map(sourceLanguage),
+    targetLanguage: map(targetLanguage),
+  );
+
+  return await _translatorCache[key]!.translateText(text);
+}
+
+ void dispose() {
+  _textRecognizer.close();
+  _languageIdentifier.close();
+  for (final t in _translatorCache.values) {
+    t.close();
   }
+  _translatorCache.clear();
+}
 }

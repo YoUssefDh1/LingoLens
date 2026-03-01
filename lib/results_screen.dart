@@ -33,6 +33,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   final MLService _mlService = MLService();
   String _translatedText = '';
   bool _isTranslating = false;
+  bool _hasTranslated = false;
   String _targetLanguage = 'en';
 
   // Firebase instances
@@ -67,7 +68,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
         'translatedText': translatedText,
         'sourceLanguage': sourceLanguage,
         'targetLanguage': targetLanguage,
-        'imageUrl': null, // Image already processed, we could upload if needed
+        'imageUrl': widget.imageFile.path,// Image already processed, we could upload if needed
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -81,7 +82,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     try {
       final result = await _mlService.translateText(
           widget.recognizedText, widget.languageCode, _targetLanguage);
-      setState(() => _translatedText = result);
+      setState(() {
+            _translatedText = result;
+            _hasTranslated = true;
+      });
 
       // Save to local repository (existing behavior)
       final now = DateTime.now();
@@ -231,19 +235,25 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               child: _isTranslating
                   ? const Center(child: CircularProgressIndicator())
-                  : SizedBox(
+                : SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: FilledButton.icon(
-                        onPressed: () {
-                          FeedbackService.click(
-                              sound: widget.soundOn, vibration: widget.vibrationOn);
-                          _handleTranslation(loc);
-                        },
-                        icon: const Icon(Icons.translate),
-                        label: Text(loc['translate'] ?? 'Translate'),
-                      ),
-                    ),
+                  child: _hasTranslated
+                ? FilledButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.check),
+                    label: Text(loc['done'] ?? 'Done'),
+                )
+                : FilledButton.icon(
+                  onPressed: () {
+                  FeedbackService.click(
+                    sound: widget.soundOn, vibration: widget.vibrationOn);
+                  _handleTranslation(loc);
+              },
+              icon: const Icon(Icons.translate),
+              label: Text(loc['translate'] ?? 'Translate'),
+                ),
+              ),
             ),
           ],
         ),
