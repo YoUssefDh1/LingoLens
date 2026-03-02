@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -10,6 +11,7 @@ class NotificationService {
   static const int _morningId = 0;
   static const int _eveningId = 1;
 
+  /// Initialize plugin and permissions
   static Future<void> initialize() async {
     tz.initializeTimeZones();
 
@@ -27,35 +29,40 @@ class NotificationService {
     );
 
     await _plugin.initialize(initSettings);
+
+    await requestPermissions();
   }
 
+  /// Request notification & exact alarm permissions
   static Future<void> requestPermissions() async {
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.requestNotificationsPermission();
+
+    if (await Permission.scheduleExactAlarm.isDenied) {
+      await Permission.scheduleExactAlarm.request();
+    }
   }
 
-  static Future<void> _scheduleSingle({
+  /// Schedule a single notification at a specific hour/minute
+  static Future<void> _scheduleSingleDaily({
     required int id,
     required int hour,
     required int minute,
     required String title,
     required String body,
   }) async {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
-    );
+    print("_scheduleSingleDaily CALLED for id $id");
 
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
+    final now = tz.TZDateTime.now(tz.local);
+
+    // Schedule for today if time is still ahead, otherwise tomorrow
+    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduled.isBefore(now)) scheduled = scheduled.add(const Duration(days: 1));
+
+    print("Now: $now");
+    print("Scheduled time: $scheduled");
 
     const androidDetails = AndroidNotificationDetails(
       'daily_reminder',
@@ -64,13 +71,9 @@ class NotificationService {
       importance: Importance.high,
       priority: Priority.high,
     );
-
     const iosDetails = DarwinNotificationDetails();
 
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
+    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
       id,
@@ -81,30 +84,73 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
+      matchDateTimeComponents: DateTimeComponents.time, // repeat daily
+    );
+
+    final pending = await _plugin.pendingNotificationRequests();
+    print("Pending notifications after scheduling id $id: ${pending.length}");
+    for (var p in pending) {
+      print("Pending id: ${p.id}, title: ${p.title}, body: ${p.body}");
+    }
+  }
+
+  /// Show a single immediate notification (to activate channel)
+  static Future<void> _showImmediateNotification({
+    required String title,
+    required String body,
+  }) async {
+    print("_showImmediateNotification CALLED");
+    await _plugin.show(
+      999,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'daily_reminder',
+          'Daily Reminder',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
     );
   }
 
-  /// Schedule both morning (10 AM) and evening (9 PM) reminders
+  /// Schedule both morning & evening reminders + show immediate test notification
   static Future<void> scheduleDefaultReminders({
     required String title,
     required String body,
   }) async {
+    print("scheduleDefaultReminders CALLED");
+
+    // Cancel existing to prevent duplicates
     await _plugin.cancelAll();
-    await _scheduleSingle(
+
+    // 🔥 Show one immediate notification first
+    await _showImmediateNotification(title: title, body: body);
+
+    // Schedule morning & evening daily notifications
+    await _scheduleSingleDaily(
       id: _morningId,
       hour: 10,
       minute: 0,
       title: title,
       body: body,
     );
-    await _scheduleSingle(
+
+    await _scheduleSingleDaily(
       id: _eveningId,
       hour: 21,
       minute: 0,
       title: title,
       body: body,
     );
+
+    final pending = await _plugin.pendingNotificationRequests();
+    print("Pending notifications: ${pending.length}");
+    for (var p in pending) {
+      print("Pending id: ${p.id}, title: ${p.title}, body: ${p.body}");
+    }
   }
 
   /// Cancel all scheduled notifications
