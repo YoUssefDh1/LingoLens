@@ -42,6 +42,10 @@ class AppLocalizations {
       'logoutConfirmTitle': 'Log Out',
       'logoutConfirmContent': 'Are you sure you want to log out?',
       'loggedOut': 'You have been logged out',
+      'notifications': 'Daily Reminder',
+      'notificationBody': 'Time to translate something new today! 📸',
+      'reminderTime': 'Reminder Time',
+      'notificationsSubtitle' : '10:00 AM & 9:00 PM',
 
       // Scan Results
       'scanResults': 'Scan Results',
@@ -174,6 +178,10 @@ class AppLocalizations {
       'logoutConfirmTitle': 'Déconnexion',
       'logoutConfirmContent': 'Êtes-vous sûr de vouloir vous déconnecter ?',
       'loggedOut': 'Vous avez été déconnecté',
+      'notifications': 'Rappel quotidien',
+      'notificationBody': 'C\'est l\'heure de traduire quelque chose de nouveau ! 📸',
+      'reminderTime': 'Heure du rappel',
+      'notificationsSubtitle' : '10h00 et 21h00',
 
       // Scan Results
       'scanResults': "Résultats de l'analyse",
@@ -306,6 +314,10 @@ class AppLocalizations {
       'logoutConfirmTitle': 'تسجيل الخروج',
       'logoutConfirmContent': 'هل أنت متأكد من رغبتك في تسجيل الخروج؟',
       'loggedOut': 'تم تسجيل خروجك',
+      'notifications': 'تذكير يومي',
+      'notificationBody': 'حان وقت ترجمة شيء جديد اليوم! 📸',
+      'reminderTime': 'وقت التذكير',
+      'notificationsSubtitle': 'الساعة 10:00 صباحاً والساعة 9:00 مساء',
 
       // Scan Results
       'scanResults': 'نتائج المسح',

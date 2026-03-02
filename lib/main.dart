@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'profile/login.dart';
 import 'profile/sign_up.dart';
+import 'services/notification_service.dart';
+import 'app_localizations.dart';
 
 // Firebase Imports
 import 'package:firebase_core/firebase_core.dart';
@@ -17,11 +19,26 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Initialize notifications
+  await NotificationService.initialize();
+  await NotificationService.requestPermissions();
+
+  // Load prefs first so savedLang is available
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('darkMode') ?? false;
   final savedLang = prefs.getString('language') ?? 'en';
   final soundOn = prefs.getBool('soundOn') ?? true;
   final vibrationOn = prefs.getBool('vibrationOn') ?? true;
+
+  // Re-schedule notifications if they were enabled
+  final notifEnabled = await NotificationService.loadPreferences();
+  if (notifEnabled) {
+    final loc = AppLocalizations.of(savedLang);
+    await NotificationService.scheduleDefaultReminders(
+      title: 'LingoLens AI',
+      body: loc['notificationBody'] ?? 'Time to translate something new today! 📸',
+    );
+  }
 
   runApp(LingoLensApp(
     initialDarkMode: isDark,
