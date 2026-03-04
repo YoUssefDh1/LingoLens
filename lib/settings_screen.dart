@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,6 +39,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _vibrationOn = true;
   bool _isLoggedIn = false;
   bool _notificationsOn = false;
+  String? _username;
+  String? _email;
+  String? _profileImagePath;
 
   @override
   void initState() {
@@ -57,6 +61,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
     setState(() {
       _isLoggedIn = firebaseUser != null || localLoggedIn;
+      _username = prefs.getString('username');
+      _email = prefs.getString('email') ?? firebaseUser?.email;
+      _profileImagePath = prefs.getString('profileImagePath');
     });
   }
 
@@ -90,7 +97,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await FeedbackService.signOut();
     if (!mounted) return;
 
-    setState(() => _isLoggedIn = false);
+    setState(() {
+      _isLoggedIn = false;
+      _username = null;
+      _email = null;
+      _profileImagePath = null;
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(loc['loggedOut'] ?? 'You have been logged out'),
@@ -102,7 +114,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final loc = AppLocalizations.of(_language);
 
     return Scaffold(
@@ -158,6 +171,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // ── Profile avatar ──────────────────────────
+                            if (_isLoggedIn) ...[
+                              const SizedBox(height: 8),
+                              _buildAvatar(isDark, theme),
+                              const SizedBox(height: 16),
+                              const Divider(),
+                            ],
+
                             // Dark mode
                             SwitchListTile(
                               title: Text(loc['darkMode'] ?? 'Dark Mode'),
@@ -230,9 +251,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                             // Notifications toggle
                             SwitchListTile(
-                              title: Text(loc['notifications'] ?? 'Daily Reminders'),
+                              title: Text(
+                                  loc['notifications'] ?? 'Daily Reminders'),
                               subtitle: Text(
-                                loc['notificationsSubtitle'] ?? '10:00 AM & 9:00 PM',
+                                loc['notificationsSubtitle'] ??
+                                    '10:00 AM & 9:00 PM',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isDark
@@ -240,14 +263,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       : Colors.grey.shade600,
                                 ),
                               ),
-                              secondary: const Icon(Icons.notifications_outlined),
+                              secondary:
+                                  const Icon(Icons.notifications_outlined),
                               value: _notificationsOn,
                               onChanged: (val) async {
                                 setState(() => _notificationsOn = val);
                                 FeedbackService.click(
                                     sound: _soundOn, vibration: _vibrationOn);
                                 if (val) {
-                                  await NotificationService.scheduleDefaultReminders(
+                                  await NotificationService
+                                      .scheduleDefaultReminders(
                                     title: 'LingoLens AI',
                                     body: loc['notificationBody'] ??
                                         'Time to translate something new today! 📸',
@@ -284,6 +309,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatar(bool isDark, ThemeData theme) {
+    final hasImage = _profileImagePath != null &&
+        _profileImagePath!.isNotEmpty &&
+        File(_profileImagePath!).existsSync();
+
+    return Row(
+      children: [
+        // Avatar circle
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: theme.colorScheme.primary,
+            border: Border.all(
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              width: 2,
+            ),
+            image: hasImage
+                ? DecorationImage(
+                    image: FileImage(File(_profileImagePath!)),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: hasImage
+              ? null
+              : Text(
+                  _username != null && _username!.isNotEmpty
+                      ? _username![0].toUpperCase()
+                      : '?',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+        const SizedBox(width: 16),
+
+        // Username + email
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_username != null)
+                Text(
+                  _username!,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: isDark ? Colors.white : Colors.grey.shade900,
+                  ),
+                ),
+              if (_email != null)
+                Text(
+                  _email!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

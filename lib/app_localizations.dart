@@ -18,6 +18,8 @@ class AppLocalizations {
       'ok': 'OK',
       'copiedToClipboard': 'Copied to clipboard',
       'error': 'Error',
+      'tapToAddPhoto':'Tap to add profile photo (optional)',
+      'noFaceDetected':'No face detected. Please use a photo of yourself.',
 
       // Home / Scan tab
       'scanText': 'Scan Text',
@@ -154,6 +156,8 @@ class AppLocalizations {
       'ok': 'OK',
       'copiedToClipboard': 'Copié dans le presse-papiers',
       'error': 'Erreur',
+      'tapToAddPhoto':'Appuyer pour ajouter une photo (optionnel)',
+      'noFaceDetected':'Aucun visage détecté. Veuillez utiliser une photo de vous.',
 
       // Home / Scan tab
       'scanText': 'Scanner le texte',
@@ -290,6 +294,8 @@ class AppLocalizations {
       'ok': 'موافق',
       'copiedToClipboard': 'تم النسخ إلى الحافظة',
       'error': 'خطأ',
+      'tapToAddPhoto':'اضغط لإضافة صورة (اختياري)',
+      'noFaceDetected':'لم يتم اكتشاف وجه. يرجى استخدام صورة لك.',
 
       // Home / Scan tab
       'scanText': 'مسح النص',
