@@ -3,6 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -14,6 +15,10 @@ class NotificationService {
   /// Initialize plugin and permissions
   static Future<void> initialize() async {
     tz.initializeTimeZones();
+
+    // Set correct local timezone
+    final String localTimezone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(localTimezone));
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -29,7 +34,6 @@ class NotificationService {
     );
 
     await _plugin.initialize(initSettings);
-
     await requestPermissions();
   }
 
@@ -53,16 +57,14 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    print("_scheduleSingleDaily CALLED for id $id");
-
     final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+        tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
 
-    // Schedule for today if time is still ahead, otherwise tomorrow
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    if (scheduled.isBefore(now)) scheduled = scheduled.add(const Duration(days: 1));
-
-    print("Now: $now");
-    print("Scheduled time: $scheduled");
+    print('Scheduling id=$id at $scheduled (now=$now)');
 
     const androidDetails = AndroidNotificationDetails(
       'daily_reminder',
@@ -72,8 +74,8 @@ class NotificationService {
       priority: Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
-
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
       id,
@@ -81,25 +83,18 @@ class NotificationService {
       body,
       scheduled,
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // repeat daily
+      matchDateTimeComponents: DateTimeComponents.time,
     );
-
-    final pending = await _plugin.pendingNotificationRequests();
-    print("Pending notifications after scheduling id $id: ${pending.length}");
-    for (var p in pending) {
-      print("Pending id: ${p.id}, title: ${p.title}, body: ${p.body}");
-    }
   }
 
-  /// Show a single immediate notification (to activate channel)
+  /// Show an immediate notification (useful for testing)
   static Future<void> _showImmediateNotification({
     required String title,
     required String body,
   }) async {
-    print("_showImmediateNotification CALLED");
     await _plugin.show(
       999,
       title,
@@ -116,20 +111,16 @@ class NotificationService {
     );
   }
 
-  /// Schedule both morning & evening reminders + show immediate test notification
+  /// Schedule both morning & evening reminders
   static Future<void> scheduleDefaultReminders({
     required String title,
     required String body,
   }) async {
-    print("scheduleDefaultReminders CALLED");
-
-    // Cancel existing to prevent duplicates
     await _plugin.cancelAll();
 
-    // 🔥 Show one immediate notification first
+    // Show immediate notification to confirm it works
     await _showImmediateNotification(title: title, body: body);
 
-    // Schedule morning & evening daily notifications
     await _scheduleSingleDaily(
       id: _morningId,
       hour: 10,
@@ -147,9 +138,9 @@ class NotificationService {
     );
 
     final pending = await _plugin.pendingNotificationRequests();
-    print("Pending notifications: ${pending.length}");
+    print('Pending after scheduling: ${pending.length}');
     for (var p in pending) {
-      print("Pending id: ${p.id}, title: ${p.title}, body: ${p.body}");
+      print('  id=${p.id} title=${p.title}');
     }
   }
 
